@@ -1,0 +1,249 @@
+<template>
+  <div class="h-screen flex flex-col bg-slate-100 overflow-hidden">
+    <header class="bg-white border-b px-6 py-3 flex justify-between items-center shadow-sm shrink-0">
+      <div class="flex items-center gap-4">
+        <div v-if="isPageLoading" class="h-8 w-48 bg-slate-200 animate-pulse rounded"></div>
+        <h1 v-else class="font-bold text-xl text-slate-800">
+          {{ boardStore.currentBoard?.title }}
+        </h1>
+      </div>
+      <Button variant="outline" size="sm" @click="$router.push('/boards')">
+        <ArrowLeft class="w-4 h-4" />Back to Dashboard
+      </Button>
+    </header>
+
+    <div class="flex-1 overflow-x-auto overflow-y-hidden">
+      <div class="h-full flex px-6 pb-4 gap-5 items-start pt-6">
+
+        <template v-if="isPageLoading">
+          <div v-for="i in 3" :key="i" class="w-72 shrink-0 bg-gray-100 rounded-lg h-96 animate-pulse border">
+            <div class="h-10 bg-slate-200 rounded-t-lg mb-4"></div>
+            <div class="mx-2 h-20 bg-slate-200 rounded mb-2"></div>
+            <div class="mx-2 h-20 bg-slate-200 rounded"></div>
+          </div>
+        </template>
+
+        <template v-else>
+          <draggable v-model="listStore.lists" group="lists" item-key="_id" class="flex gap-5 items-start h-full"
+            ghost-class="opacity-50" @change="(event: unknown) => onListDrop(event as DraggableChange<any>)">
+            <template #item="{ element: list }">
+              <div
+                class="w-72 shrink-0 bg-gray-100 rounded-lg flex flex-col max-h-full border shadow-sm cursor-default">
+
+                <div
+                  class="p-3 pl-4 font-semibold text-sm text-slate-700 flex justify-between items-center cursor-grab active:cursor-grabbing handle">
+                  <EditableText :text="list.title" class="flex-1 font-semibold"
+                    @save="(val: string) => listStore.updateListTitle(list._id, val)" />
+
+                  <Button variant="ghost" size="icon" class="h-6 w-6 text-slate-400 hover:text-red-600"
+                    @click="handleDeleteList(list._id)">
+                    <X class="w-4 h-4" />
+                  </Button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-2 min-h-8 scrollbar-thin">
+                  <draggable :list="cardStore.cards[list._id] || []" group="cards" item-key="_id"
+                    ghost-class="opacity-50"
+                    @change="(event: unknown) => onCardDrop(event as DraggableChange<any>, list._id)">
+                    <template #item="{ element: card }">
+                      <div
+                        class="bg-white p-3 mb-2 rounded shadow-sm border border-slate-200 cursor-pointer hover:border-blue-400 group relative">
+                        <EditableText :text="card.title" class="text-sm text-slate-700 wrap-break-word pr-6 block"
+                          @save="(val: string) => cardStore.updateCard(card._id, { title: val })" />
+
+                        <button
+                          class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 p-1 transition-opacity"
+                          @click.stop="handleDeleteCard(card._id)">
+                          <span class="sr-only">Delete</span>
+                          <X class="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </template>
+                  </draggable>
+                </div>
+
+                <div class="p-2 pt-0">
+                  <form v-if="addingCardToList === list._id" @submit.prevent="handleAddCard(list._id)" class="mt-2">
+                    <Input v-model="newCardTitle" placeholder="Enter card title..." class="bg-white mb-2 h-8 text-sm"
+                      autoFocus @blur="cancelAddCard" />
+                    <div class="flex gap-2">
+                      <Button type="submit" size="sm" class="h-7 px-3 text-xs">Add</Button>
+                      <Button type="button" variant="ghost" size="sm" class="h-7 px-2" @click="cancelAddCard">
+                        <X class="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </form>
+                  <Button v-else variant="ghost" size="sm"
+                    class="w-full justify-start text-slate-500 hover:text-slate-700 hover:bg-slate-200"
+                    @click="startAddCard(list._id)">
+                    <Plus class="w-4 h-4" /> Add a card
+                  </Button>
+                </div>
+              </div>
+            </template>
+          </draggable>
+
+          <div class="w-72 shrink-0">
+            <form v-if="isAddingList" @submit.prevent="handleAddList" class="bg-white p-3 rounded-lg border shadow-sm">
+              <Input v-model="newListTitle" placeholder="Enter list title..." class="mb-2" autoFocus />
+              <div class="flex gap-2">
+                <Button type="submit" size="sm">Add List</Button>
+                <Button type="button" variant="ghost" size="sm" @click="isAddingList = false">
+                  <X class="w-4 h-4" />
+                </Button>
+              </div>
+            </form>
+            <Button v-else
+              class="w-full bg-white/50 hover:bg-white/80 text-slate-700 justify-start border-2 border-dashed border-slate-300"
+              @click="isAddingList = true">
+              <Plus class="w-4 h-4" /> Add another list
+            </Button>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <ConfirmDeleteDialog :open="isDeleteOpen" title="Delete List?"
+      description="This will permanently delete the list and all cards inside it." @update:open="isDeleteOpen = $event"
+      @confirm="confirmDeleteList" @cancel="isDeleteOpen = false" />
+  </div>
+</template>
+
+<script setup lang="ts">
+import ConfirmDeleteDialog from '@/components/ConfirmDeleteDialog.vue';
+import EditableText from '@/components/EditableText.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useBoardStore } from '@/stores/board';
+import { useCardStore } from '@/stores/card';
+import { useListStore } from '@/stores/list';
+import type { Card } from '@/types/card';
+import type { DraggableChange } from '@/types/drag-drop';
+import type { List } from '@/types/list';
+import { ArrowLeft, Plus, X } from 'lucide-vue-next';
+import { onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { toast } from 'vue-sonner';
+import draggable from 'vuedraggable';
+
+const route = useRoute();
+const router = useRouter();
+const boardStore = useBoardStore();
+const listStore = useListStore();
+const cardStore = useCardStore();
+const boardId = route.params.id as string;
+const isPageLoading = ref(true);
+const isAddingList = ref(false);
+const newListTitle = ref('');
+const addingCardToList = ref<string | null>(null);
+const newCardTitle = ref('');
+const isDeleteOpen = ref(false);
+const listToDelete = ref<string | null>(null);
+
+onMounted(async () => {
+  isPageLoading.value = true;
+  try {
+    await Promise.all([
+      boardStore.fetchBoard(boardId),
+      listStore.fetchLists(boardId)
+    ]);
+
+    await Promise.all(
+      listStore.lists.map(list => cardStore.fetchCardsForList(list._id))
+    );
+  } catch {
+    toast.error('Board not found');
+    router.push('/boards');
+  } finally {
+    isPageLoading.value = false;
+  }
+});
+
+const onListDrop = (event: DraggableChange<List>) => {
+  if (event.moved) {
+    const { element, newIndex, oldIndex } = event.moved;
+    listStore.moveList(element._id, newIndex, oldIndex);
+  }
+};
+
+const onCardDrop = (event: DraggableChange<Card>, listId: string) => {
+  if (event.moved) {
+    const { element, newIndex } = event.moved;
+    cardStore.moveCard(element._id, listId, newIndex);
+  }
+  else if (event.added) {
+    const { element, newIndex } = event.added;
+    cardStore.moveCard(element._id, listId, newIndex);
+  }
+};
+
+const handleAddList = async () => {
+  if (!newListTitle.value.trim()) return;
+  try {
+    await listStore.createList({ title: newListTitle.value, boardId });
+    newListTitle.value = '';
+    isAddingList.value = false;
+  } catch {
+    toast.error('Failed to add list');
+  }
+};
+
+const handleDeleteList = (listId: string) => {
+  listToDelete.value = listId;
+  isDeleteOpen.value = true;
+};
+
+const confirmDeleteList = async () => {
+  if (!listToDelete.value) return;
+  try {
+    await listStore.deleteList(listToDelete.value);
+  } catch {
+    toast.error('Failed to delete list');
+  } finally {
+    isDeleteOpen.value = false;
+    listToDelete.value = null;
+  }
+};
+
+const startAddCard = (listId: string) => {
+  addingCardToList.value = listId;
+  newCardTitle.value = '';
+};
+
+const cancelAddCard = () => {
+  setTimeout(() => { if (!newCardTitle.value) addingCardToList.value = null; }, 100);
+};
+
+const handleAddCard = async (listId: string) => {
+  if (!newCardTitle.value.trim()) return;
+  try {
+    await cardStore.createCard({ title: newCardTitle.value, listId, boardId });
+    newCardTitle.value = '';
+  } catch {
+    toast.error('Failed to add card');
+  }
+};
+
+const handleDeleteCard = async (cardId: string) => {
+  await cardStore.deleteCard(cardId);
+};
+</script>
+
+<style scoped>
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>
