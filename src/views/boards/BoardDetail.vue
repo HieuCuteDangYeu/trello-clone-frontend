@@ -36,10 +36,18 @@
                   <EditableText :text="list.title" class="flex-1 font-semibold"
                     @save="(val: string) => listStore.updateListTitle(list._id, val)" />
 
-                  <Button variant="ghost" size="icon" class="h-6 w-6 text-slate-400 hover:text-red-600"
-                    @click="handleDeleteList(list._id)">
-                    <X class="w-4 h-4" />
-                  </Button>
+                  <div class="flex items-center gap-1">
+                    <Button variant="ghost" size="icon"
+                      class="h-6 w-6 text-slate-400 hover:text-green-600 hover:bg-green-50" @click="startQuiz(list._id)"
+                      title="Start Quiz">
+                      <PlayCircle class="w-4 h-4" />
+                    </Button>
+
+                    <Button variant="ghost" size="icon" class="h-6 w-6 text-slate-400 hover:text-red-600"
+                      @click="handleDeleteList(list._id)">
+                      <X class="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 <div class="flex-1 overflow-y-auto p-2 min-h-8 scrollbar-thin">
@@ -143,6 +151,9 @@
       @confirm="confirmDeleteList" @cancel="isDeleteOpen = false" />
 
     <EditCardDialog :open="isEditOpen" :card="cardToEdit" @update:open="isEditOpen = $event" />
+
+    <QuizDialog :open="isQuizOpen" :cards="quizCards" :list-name="quizListName" :next-list-id="quizNextListId"
+      :destination-name="quizDestinationName" @update:open="isQuizOpen = $event" />
   </div>
 </template>
 
@@ -150,6 +161,7 @@
 import ConfirmDeleteDialog from '@/components/ConfirmDeleteDialog.vue';
 import EditCardDialog from '@/components/EditCardDialog.vue';
 import EditableText from '@/components/EditableText.vue';
+import QuizDialog from '@/components/QuizDialog.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useBoardStore } from '@/stores/board';
@@ -159,7 +171,7 @@ import type { Card } from '@/types/card';
 import type { DraggableChange } from '@/types/drag-drop';
 import type { List } from '@/types/list';
 import type { WindowWithResponsiveVoice } from '@/types/voice';
-import { ArrowLeft, Pencil, Plus, Volume2, X } from 'lucide-vue-next';
+import { ArrowLeft, Pencil, PlayCircle, Plus, Volume2, X } from 'lucide-vue-next';
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
@@ -179,11 +191,14 @@ const newCardTitle = ref('');
 const newCardTranslation = ref('');
 const isDeleteOpen = ref(false);
 const listToDelete = ref<string | null>(null);
-
-// Flashcard State
 const revealedCards = ref(new Set<string>());
 const isEditOpen = ref(false);
 const cardToEdit = ref<Card | null>(null);
+const isQuizOpen = ref(false);
+const quizCards = ref<Card[]>([]);
+const quizListName = ref('');
+const quizNextListId = ref<string | undefined>(undefined);
+const quizDestinationName = ref('');
 
 onMounted(async () => {
   isPageLoading.value = true;
@@ -319,6 +334,34 @@ const handleAddCard = async (listId: string) => {
 
 const handleDeleteCard = async (cardId: string) => {
   await cardStore.deleteCard(cardId);
+};
+
+const startQuiz = (listId: string) => {
+  const list = listStore.lists.find(l => l._id === listId);
+  if (!list) return;
+
+  const cards = cardStore.cards[listId] || [];
+
+  if (cards.length === 0) {
+    toast.warning('Add some words to this list first!');
+    return;
+  }
+
+  const listIndex = listStore.lists.indexOf(list);
+  const nextList = listStore.lists[listIndex + 1];
+
+  quizCards.value = [...cards];
+  quizListName.value = list.title;
+
+  if (nextList) {
+    quizNextListId.value = nextList._id;
+    quizDestinationName.value = nextList.title;
+  } else {
+    quizNextListId.value = undefined;
+    quizDestinationName.value = 'Mastered (Final Stage)';
+  }
+
+  isQuizOpen.value = true;
 };
 </script>
 
