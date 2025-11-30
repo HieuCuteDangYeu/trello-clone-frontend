@@ -25,7 +25,7 @@
             class="text-lg font-semibold text-slate-800 group-hover:text-blue-600 transition-colors pointer-events-none">
             {{ board.title }}
           </CardTitle>
-          <p class="text-sm text-slate-500 mt-1 pointer-events-none">Workspace Board</p>
+          <p class="text-sm text-slate-500 mt-1 pointer-events-none">{{ board.description }}</p>
 
           <div class="absolute top-3 right-3 z-20">
             <DropdownMenu>
@@ -70,6 +70,32 @@
               <FormLabel>Board Title</FormLabel>
               <FormControl>
                 <Input placeholder="e.g. Project Alpha" v-bind="componentField" autofocus />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          </FormField>
+
+          <FormField v-slot="{ componentField }" name="description">
+            <FormItem>
+              <FormLabel>Description (Optional)</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g. Irregular verbs list" v-bind="componentField" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          </FormField>
+
+          <FormField v-slot="{ componentField }" name="language">
+            <FormItem>
+              <FormLabel>Target Language (Voice)</FormLabel>
+              <FormControl>
+                <select
+                  class="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  v-bind="componentField">
+                  <option v-for="lang in supportedLanguages" :key="lang.value" :value="lang.value">
+                    {{ lang.label }}
+                  </option>
+                </select>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -138,6 +164,16 @@ const isEditing = ref(false);
 const editingBoardId = ref<string | null>(null);
 const isDeleteOpen = ref(false);
 const boardToDelete = ref<string | null>(null);
+const supportedLanguages = [
+  { label: 'English (US)', value: 'US English Male' },
+  { label: 'English (UK)', value: 'UK English Female' },
+  { label: 'Vietnamese', value: 'Vietnamese Male' },
+  { label: 'French', value: 'French Female' },
+  { label: 'Spanish', value: 'Spanish Female' },
+  { label: 'German', value: 'Deutsch Female' },
+  { label: 'Japanese', value: 'Japanese Female' },
+  { label: 'Korean', value: 'Korean Female' },
+]
 
 onMounted(() => {
   boardStore.fetchBoards();
@@ -161,19 +197,29 @@ const openCreateDialog = () => {
 const openRenameDialog = (board: Board) => {
   isEditing.value = true;
   editingBoardId.value = board._id;
-  setValues({ title: board.title });
+  setValues({
+    title: board.title,
+    description: board.description || '',
+    language: board.language || 'US English Male'
+  });
   isDialogOpen.value = true;
 };
 
 const onSubmit = handleSubmit(async (values) => {
   try {
     if (isEditing.value && editingBoardId.value) {
-      await boardStore.updateBoard(editingBoardId.value, { title: values.title });
+      await boardStore.updateBoard(editingBoardId.value, {
+        title: values.title,
+        description: values.description,
+        language: values.language
+      });
       toast.success('Board updated');
       isDialogOpen.value = false;
     } else {
       const newBoard = await boardStore.createBoard({
         title: values.title,
+        description: values.description,
+        language: values.language,
         isPrivate: true
       });
       toast.success('Board created');

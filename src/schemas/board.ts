@@ -6,6 +6,7 @@ export const createBoardSchema = z.object({
     .min(3, { message: 'Title must be at least 3 characters' })
     .max(50, { message: 'Title cannot exceed 50 characters' }),
   description: z.string().optional(),
+  language: z.string().optional().default('US English Male'),
   isPrivate: z.boolean().optional().default(true),
 })
 

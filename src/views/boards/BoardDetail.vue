@@ -216,12 +216,7 @@ const toggleReveal = (cardId: string) => {
 const speakWord = (text: string) => {
   if (!text) return;
 
-  // Temporary heuristic since backend doesn't have 'language' yet
-  const isGerman = ['der', 'die', 'das', 'katze', 'hund'].some(w => text.toLowerCase().includes(w));
-  const voiceName = isGerman ? "Deutsch Female" : "US English Male";
-
-  console.log(`Speaking: "${text}" with voice: ${voiceName}`);
-
+  const voiceName = boardStore.currentBoard?.language || 'US English Male';
   const rv = (window as unknown as WindowWithResponsiveVoice).responsiveVoice;
 
   if (rv) {

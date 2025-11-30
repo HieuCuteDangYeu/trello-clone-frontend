@@ -45,10 +45,17 @@ export const useBoardStore = defineStore('board', () => {
     }
   }
 
-  async function updateBoard(boardId: string, payload: { title?: string; description?: string }) {
+  async function updateBoard(
+    boardId: string,
+    payload: { title?: string; description?: string; language?: string },
+  ) {
     try {
       const board = boards.value.find((b) => b._id === boardId)
-      if (board && payload.title) board.title = payload.title
+      if (board) {
+        if (payload.title) board.title = payload.title
+        if (payload.description) board.description = payload.description
+        if (payload.language) board.language = payload.language
+      }
       await boardsApi.update(boardId, payload)
     } catch (error) {
       throw error
