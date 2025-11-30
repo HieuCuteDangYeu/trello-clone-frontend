@@ -4,7 +4,7 @@
       <CardHeader>
         <CardTitle class="text-2xl font-bold text-center">Welcome Back</CardTitle>
         <CardDescription class="text-center">
-          Enter your credentials to access your workspace
+          Sign in to continue your language learning journey
         </CardDescription>
       </CardHeader>
 

@@ -8,7 +8,7 @@
         </h1>
       </div>
       <Button variant="outline" size="sm" @click="$router.push('/boards')">
-        <ArrowLeft class="w-4 h-4" />Back to Dashboard
+        <ArrowLeft class="w-4 h-4" />Back to Decks
       </Button>
     </header>
 
@@ -128,9 +128,9 @@
 
           <div class="w-72 shrink-0">
             <form v-if="isAddingList" @submit.prevent="handleAddList" class="bg-white p-3 rounded-lg border shadow-sm">
-              <Input v-model="newListTitle" placeholder="Category (e.g. New Words)..." class="mb-2" autoFocus />
+              <Input v-model="newListTitle" placeholder="Stage Name (e.g. Mastered)..." class="mb-2" autoFocus />
               <div class="flex gap-2">
-                <Button type="submit" size="sm">Add Category</Button>
+                <Button type="submit" size="sm">Add Stage</Button>
                 <Button type="button" variant="ghost" size="sm" @click="isAddingList = false">
                   <X class="w-4 h-4" />
                 </Button>
@@ -146,9 +146,9 @@
       </div>
     </div>
 
-    <ConfirmDeleteDialog :open="isDeleteOpen" title="Delete List?"
-      description="This will permanently delete the list and all words inside it." @update:open="isDeleteOpen = $event"
-      @confirm="confirmDeleteList" @cancel="isDeleteOpen = false" />
+    <ConfirmDeleteDialog :open="isDeleteOpen" title="Delete Stage?"
+      description="This will permanently delete this stage and all words inside it."
+      @update:open="isDeleteOpen = $event" @confirm="confirmDeleteList" @cancel="isDeleteOpen = false" />
 
     <EditCardDialog :open="isEditOpen" :card="cardToEdit" @update:open="isEditOpen = $event" />
 

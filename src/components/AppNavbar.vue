@@ -1,8 +1,8 @@
 <template>
   <nav class="border-b bg-white px-6 py-3 flex justify-between items-center">
     <div class="flex items-center gap-2">
-      <div class="bg-blue-600 p-1.5 rounded text-white font-bold text-lg">TC</div>
-      <span class="font-bold text-xl tracking-tight text-slate-800">Trello Clone</span>
+      <div class="bg-blue-600 p-1.5 rounded text-white font-bold text-lg">VB</div>
+      <span class="font-bold text-xl tracking-tight text-slate-800">VocabBuilder</span>
     </div>
 
     <div class="flex items-center gap-4">
@@ -32,10 +32,8 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '@/stores/auth';
-import { useRouter } from 'vue-router';
-import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,6 +42,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
+import { useAuthStore } from '@/stores/auth';
+import { useRouter } from 'vue-router';
 
 const authStore = useAuthStore();
 const router = useRouter();

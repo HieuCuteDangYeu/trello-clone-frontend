@@ -4,7 +4,7 @@
 
     <div class="container mx-auto p-8 max-w-6xl">
       <div class="flex items-center justify-between mb-8">
-        <h1 class="text-3xl font-bold text-slate-800">Your Workspaces</h1>
+        <h1 class="text-3xl font-bold text-slate-800">>My Language Decks</h1>
 
         <Button @click="openCreateDialog" class="bg-blue-600 hover:bg-blue-700 text-white">
           <Plus class="w-4 h-4" /> Create New Board
@@ -50,24 +50,24 @@
       </div>
 
       <div v-else class="text-center py-20">
-        <div class="text-slate-400 text-xl font-medium">No boards found</div>
-        <p class="text-slate-500 mt-2">Create your first board to get started!</p>
+        <div class="text-slate-400 text-xl font-medium">No decks found</div>
+        <p class="text-slate-500 mt-2">Create your first language deck to get started!</p>
       </div>
     </div>
 
     <Dialog v-model:open="isDialogOpen">
       <DialogContent class="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{{ isEditing ? 'Rename Board' : 'Create Board' }}</DialogTitle>
+          <DialogTitle>{{ isEditing ? 'Rename Deck' : 'Create Deck' }}</DialogTitle>
           <DialogDescription>
-            {{ isEditing ? 'Update the title of your board.' : 'Give your new board a title.' }}
+            {{ isEditing ? 'Update the name of your deck.' : 'Start a new language collection.' }}
           </DialogDescription>
         </DialogHeader>
 
         <form @submit="onSubmit" class="space-y-4 mt-4">
           <FormField v-slot="{ componentField }" name="title">
             <FormItem>
-              <FormLabel>Board Title</FormLabel>
+              <FormLabel>Deck Name</FormLabel>
               <FormControl>
                 <Input placeholder="e.g. Project Alpha" v-bind="componentField" autofocus />
               </FormControl>

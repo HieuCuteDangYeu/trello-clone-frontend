@@ -2,9 +2,9 @@
   <div class="flex items-center justify-center min-h-screen bg-gray-50 p-4">
     <Card class="w-full max-w-md">
       <CardHeader>
-        <CardTitle class="text-2xl font-bold text-center">Create an Account</CardTitle>
+        <CardTitle class="text-2xl font-bold text-center">Start Learning</CardTitle>
         <CardDescription class="text-center">
-          Enter your details to get started
+          Create an account to build your own vocabulary decks
         </CardDescription>
       </CardHeader>
 
