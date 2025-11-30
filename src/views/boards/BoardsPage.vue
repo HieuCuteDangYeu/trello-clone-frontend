@@ -4,10 +4,10 @@
 
     <div class="container mx-auto p-8 max-w-6xl">
       <div class="flex items-center justify-between mb-8">
-        <h1 class="text-3xl font-bold text-slate-800">>My Language Decks</h1>
+        <h1 class="text-3xl font-bold text-slate-800">My Language Decks</h1>
 
         <Button @click="openCreateDialog" class="bg-blue-600 hover:bg-blue-700 text-white">
-          <Plus class="w-4 h-4" /> Create New Board
+          <Plus class="w-4 h-4" /> Create New Deck
         </Button>
       </div>
 
@@ -106,15 +106,15 @@
               Cancel
             </Button>
             <Button type="submit" :disabled="isSubmitting">
-              {{ isSubmitting ? 'Saving...' : (isEditing ? 'Save Changes' : 'Create Board') }}
+              {{ isSubmitting ? 'Saving...' : (isEditing ? 'Save Changes' : 'Create Deck') }}
             </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
 
-    <ConfirmDeleteDialog :open="isDeleteOpen" title="Delete Board?"
-      description="This will permanently delete the board and all lists/cards inside it."
+    <ConfirmDeleteDialog :open="isDeleteOpen" title="Delete Deck?"
+      description="This will permanently delete this deck and all lists/cards inside it."
       @update:open="isDeleteOpen = $event" @confirm="handleDeleteBoard" @cancel="isDeleteOpen = false" />
   </div>
 </template>
@@ -213,7 +213,7 @@ const onSubmit = handleSubmit(async (values) => {
         description: values.description,
         language: values.language
       });
-      toast.success('Board updated');
+      toast.success('Deck updated');
       isDialogOpen.value = false;
     } else {
       const newBoard = await boardStore.createBoard({
@@ -222,7 +222,7 @@ const onSubmit = handleSubmit(async (values) => {
         language: values.language,
         isPrivate: true
       });
-      toast.success('Board created');
+      toast.success('Deck created');
       isDialogOpen.value = false;
       resetForm();
       router.push(`/boards/${newBoard._id}`);
@@ -243,9 +243,9 @@ const handleDeleteBoard = async () => {
   if (!boardToDelete.value) return;
   try {
     await boardStore.deleteBoard(boardToDelete.value);
-    toast.success('Board deleted');
+    toast.success('Deck deleted');
   } catch (err) {
-    toast.error('Failed to delete board', { description: getErrorMessage(err) });
+    toast.error('Failed to delete deck', { description: getErrorMessage(err) });
   } finally {
     isDeleteOpen.value = false;
     boardToDelete.value = null;

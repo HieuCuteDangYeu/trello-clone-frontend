@@ -139,7 +139,7 @@
             <Button v-else
               class="w-full bg-white/50 hover:bg-white/80 text-slate-700 justify-start border-2 border-dashed border-slate-300"
               @click="isAddingList = true">
-              <Plus class="w-4 h-4" /> Add category
+              <Plus class="w-4 h-4" /> Add Stage
             </Button>
           </div>
         </template>
@@ -280,7 +280,7 @@ const handleAddList = async () => {
     newListTitle.value = '';
     isAddingList.value = false;
   } catch {
-    toast.error('Failed to add list');
+    toast.error('Failed to add stage');
   }
 };
 
@@ -294,7 +294,7 @@ const confirmDeleteList = async () => {
   try {
     await listStore.deleteList(listToDelete.value);
   } catch {
-    toast.error('Failed to delete list');
+    toast.error('Failed to delete stage');
   } finally {
     isDeleteOpen.value = false;
     listToDelete.value = null;
