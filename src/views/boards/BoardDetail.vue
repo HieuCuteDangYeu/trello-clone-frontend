@@ -25,7 +25,8 @@
 
         <template v-else>
           <draggable v-model="listStore.lists" group="lists" item-key="_id" class="flex gap-5 items-start h-full"
-            ghost-class="opacity-50" @change="(event: unknown) => onListDrop(event as DraggableChange<any>)">
+            ghost-class="opacity-50" @change="(event: DraggableChange<List>) => onListDrop(event)">
+
             <template #item="{ element: list }">
               <div
                 class="w-72 shrink-0 bg-gray-100 rounded-lg flex flex-col max-h-full border shadow-sm cursor-default">
@@ -43,31 +44,65 @@
 
                 <div class="flex-1 overflow-y-auto p-2 min-h-8 scrollbar-thin">
                   <draggable :list="cardStore.cards[list._id] || []" group="cards" item-key="_id"
-                    ghost-class="opacity-50"
-                    @change="(event: unknown) => onCardDrop(event as DraggableChange<any>, list._id)">
+                    ghost-class="opacity-50" @change="(event: DraggableChange<Card>) => onCardDrop(event, list._id)">
+
                     <template #item="{ element: card }">
                       <div
-                        class="bg-white p-3 mb-2 rounded shadow-sm border border-slate-200 cursor-pointer hover:border-blue-400 group relative">
-                        <EditableText :text="card.title" class="text-sm text-slate-700 wrap-break-word pr-6 block"
-                          @save="(val: string) => cardStore.updateCard(card._id, { title: val })" />
+                        class="bg-white p-3 mb-2 rounded shadow-sm border border-slate-200 hover:border-blue-400 group relative flex flex-col gap-1 cursor-pointer transition-all"
+                        @click="toggleReveal(card._id)">
+                        <div class="flex justify-between items-start">
+                          <span class="font-bold text-slate-800 text-lg">{{ card.title }}</span>
 
-                        <button
-                          class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 p-1 transition-opacity"
-                          @click.stop="handleDeleteCard(card._id)">
-                          <span class="sr-only">Delete</span>
-                          <X class="w-3.5 h-3.5" />
-                        </button>
+                          <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button variant="ghost" size="icon"
+                              class="h-6 w-6 text-slate-400 hover:text-blue-600 hover:bg-slate-100"
+                              @click.stop="speakWord(card.title)" title="Listen">
+                              <Volume2 class="w-3.5 h-3.5" />
+                            </Button>
+
+                            <Button variant="ghost" size="icon"
+                              class="h-6 w-6 text-slate-400 hover:text-blue-600 hover:bg-slate-100"
+                              @click.stop="openEditDialog(card)" title="Edit">
+                              <Pencil class="w-3.5 h-3.5" />
+                            </Button>
+
+                            <Button variant="ghost" size="icon"
+                              class="h-6 w-6 text-slate-400 hover:text-red-600 hover:bg-slate-100"
+                              @click.stop="handleDeleteCard(card._id)" title="Delete">
+                              <X class="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div class="min-h-6">
+                          <div v-if="revealedCards.has(card._id)" class="animate-in fade-in duration-200">
+                            <p class="text-sm text-slate-700 font-medium border-t pt-1 mt-1 border-slate-100">
+                              {{ card.translation }}
+                            </p>
+                            <p v-if="card.pronunciation" class="text-xs text-slate-500 font-mono mt-0.5">
+                              /{{ card.pronunciation }}/
+                            </p>
+                            <p v-if="card.example"
+                              class="text-xs text-slate-500 italic mt-1 border-l-2 border-blue-200 pl-2">
+                              "{{ card.example }}"
+                            </p>
+                          </div>
+                          <p v-else class="text-slate-300 italic text-xs select-none mt-1">Click to reveal...</p>
+                        </div>
                       </div>
                     </template>
                   </draggable>
                 </div>
 
                 <div class="p-2 pt-0">
-                  <form v-if="addingCardToList === list._id" @submit.prevent="handleAddCard(list._id)" class="mt-2">
-                    <Input v-model="newCardTitle" placeholder="Enter card title..." class="bg-white mb-2 h-8 text-sm"
-                      autoFocus @blur="cancelAddCard" />
+                  <form v-if="addingCardToList === list._id" @submit.prevent="handleAddCard(list._id)"
+                    class="mt-2 p-2 bg-slate-50 rounded border">
+                    <Input v-model="newCardTitle" placeholder="Word (e.g. Katze)" class="bg-white mb-2 h-8 text-sm"
+                      autoFocus />
+                    <Input v-model="newCardTranslation" placeholder="Meaning (e.g. Cat)"
+                      class="bg-white mb-2 h-8 text-sm" />
                     <div class="flex gap-2">
-                      <Button type="submit" size="sm" class="h-7 px-3 text-xs">Add</Button>
+                      <Button type="submit" size="sm" class="h-7 px-3 text-xs">Add Word</Button>
                       <Button type="button" variant="ghost" size="sm" class="h-7 px-2" @click="cancelAddCard">
                         <X class="w-4 h-4" />
                       </Button>
@@ -76,7 +111,7 @@
                   <Button v-else variant="ghost" size="sm"
                     class="w-full justify-start text-slate-500 hover:text-slate-700 hover:bg-slate-200"
                     @click="startAddCard(list._id)">
-                    <Plus class="w-4 h-4" /> Add a card
+                    <Plus class="w-4 h-4" /> Add word
                   </Button>
                 </div>
               </div>
@@ -85,9 +120,9 @@
 
           <div class="w-72 shrink-0">
             <form v-if="isAddingList" @submit.prevent="handleAddList" class="bg-white p-3 rounded-lg border shadow-sm">
-              <Input v-model="newListTitle" placeholder="Enter list title..." class="mb-2" autoFocus />
+              <Input v-model="newListTitle" placeholder="Category (e.g. New Words)..." class="mb-2" autoFocus />
               <div class="flex gap-2">
-                <Button type="submit" size="sm">Add List</Button>
+                <Button type="submit" size="sm">Add Category</Button>
                 <Button type="button" variant="ghost" size="sm" @click="isAddingList = false">
                   <X class="w-4 h-4" />
                 </Button>
@@ -96,7 +131,7 @@
             <Button v-else
               class="w-full bg-white/50 hover:bg-white/80 text-slate-700 justify-start border-2 border-dashed border-slate-300"
               @click="isAddingList = true">
-              <Plus class="w-4 h-4" /> Add another list
+              <Plus class="w-4 h-4" /> Add category
             </Button>
           </div>
         </template>
@@ -104,13 +139,16 @@
     </div>
 
     <ConfirmDeleteDialog :open="isDeleteOpen" title="Delete List?"
-      description="This will permanently delete the list and all cards inside it." @update:open="isDeleteOpen = $event"
+      description="This will permanently delete the list and all words inside it." @update:open="isDeleteOpen = $event"
       @confirm="confirmDeleteList" @cancel="isDeleteOpen = false" />
+
+    <EditCardDialog :open="isEditOpen" :card="cardToEdit" @update:open="isEditOpen = $event" />
   </div>
 </template>
 
 <script setup lang="ts">
 import ConfirmDeleteDialog from '@/components/ConfirmDeleteDialog.vue';
+import EditCardDialog from '@/components/EditCardDialog.vue';
 import EditableText from '@/components/EditableText.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -120,7 +158,8 @@ import { useListStore } from '@/stores/list';
 import type { Card } from '@/types/card';
 import type { DraggableChange } from '@/types/drag-drop';
 import type { List } from '@/types/list';
-import { ArrowLeft, Plus, X } from 'lucide-vue-next';
+import type { WindowWithResponsiveVoice } from '@/types/voice';
+import { ArrowLeft, Pencil, Plus, Volume2, X } from 'lucide-vue-next';
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
@@ -137,8 +176,14 @@ const isAddingList = ref(false);
 const newListTitle = ref('');
 const addingCardToList = ref<string | null>(null);
 const newCardTitle = ref('');
+const newCardTranslation = ref('');
 const isDeleteOpen = ref(false);
 const listToDelete = ref<string | null>(null);
+
+// Flashcard State
+const revealedCards = ref(new Set<string>());
+const isEditOpen = ref(false);
+const cardToEdit = ref<Card | null>(null);
 
 onMounted(async () => {
   isPageLoading.value = true;
@@ -159,6 +204,46 @@ onMounted(async () => {
   }
 });
 
+// --- Flashcard Logic ---
+const toggleReveal = (cardId: string) => {
+  if (revealedCards.value.has(cardId)) {
+    revealedCards.value.delete(cardId);
+  } else {
+    revealedCards.value.add(cardId);
+  }
+};
+
+const speakWord = (text: string) => {
+  if (!text) return;
+
+  // Temporary heuristic since backend doesn't have 'language' yet
+  const isGerman = ['der', 'die', 'das', 'katze', 'hund'].some(w => text.toLowerCase().includes(w));
+  const voiceName = isGerman ? "Deutsch Female" : "US English Male";
+
+  console.log(`Speaking: "${text}" with voice: ${voiceName}`);
+
+  const rv = (window as unknown as WindowWithResponsiveVoice).responsiveVoice;
+
+  if (rv) {
+    rv.speak(text, voiceName, {
+      onstart: () => console.log('Speaking started...'),
+      onend: () => console.log('Speaking finished.'),
+      onerror: (e: unknown) => {
+        console.error('RV Error:', e);
+        toast.error('Audio failed to play');
+      }
+    });
+  } else {
+    toast.error('Audio library not loaded. Check internet connection.');
+  }
+};
+
+const openEditDialog = (card: Card) => {
+  cardToEdit.value = card;
+  isEditOpen.value = true;
+};
+
+// --- Drag & Drop ---
 const onListDrop = (event: DraggableChange<List>) => {
   if (event.moved) {
     const { element, newIndex, oldIndex } = event.moved;
@@ -177,6 +262,7 @@ const onCardDrop = (event: DraggableChange<Card>, listId: string) => {
   }
 };
 
+// --- Lists Logic ---
 const handleAddList = async () => {
   if (!newListTitle.value.trim()) return;
   try {
@@ -208,19 +294,31 @@ const confirmDeleteList = async () => {
 const startAddCard = (listId: string) => {
   addingCardToList.value = listId;
   newCardTitle.value = '';
+  newCardTranslation.value = '';
 };
 
 const cancelAddCard = () => {
-  setTimeout(() => { if (!newCardTitle.value) addingCardToList.value = null; }, 100);
+  setTimeout(() => {
+    if (!newCardTitle.value && !newCardTranslation.value) {
+      addingCardToList.value = null;
+    }
+  }, 100);
 };
 
 const handleAddCard = async (listId: string) => {
-  if (!newCardTitle.value.trim()) return;
+  if (!newCardTitle.value.trim() || !newCardTranslation.value.trim()) return;
+
   try {
-    await cardStore.createCard({ title: newCardTitle.value, listId, boardId });
+    await cardStore.createCard({
+      title: newCardTitle.value,
+      translation: newCardTranslation.value,
+      listId,
+      boardId
+    });
     newCardTitle.value = '';
+    newCardTranslation.value = '';
   } catch {
-    toast.error('Failed to add card');
+    toast.error('Failed to add word');
   }
 };
 

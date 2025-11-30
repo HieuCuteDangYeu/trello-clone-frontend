@@ -33,7 +33,9 @@ export const useCardStore = defineStore('card', () => {
         const card = cards.value[listId]!.find((c) => c._id === cardId)
         if (card) {
           if (payload.title) card.title = payload.title
-          if (payload.description) card.description = payload.description
+          if (payload.translation) card.translation = payload.translation
+          if (payload.example) card.example = payload.example
+          if (payload.pronunciation) card.pronunciation = payload.pronunciation
           break
         }
       }

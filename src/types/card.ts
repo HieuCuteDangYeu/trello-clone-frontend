@@ -1,7 +1,9 @@
 export interface Card {
   _id: string
   title: string
-  description?: string
+  translation: string
+  example?: string
+  pronunciation?: string
   listId: string
   boardId: string
   position: number
@@ -11,13 +13,18 @@ export interface Card {
 
 export interface CreateCardDTO {
   title: string
+  translation: string
+  example?: string
+  pronunciation?: string
   listId: string
   boardId: string
 }
 
 export interface UpdateCardDTO {
   title?: string
-  description?: string
+  translation?: string
+  example?: string
+  pronunciation?: string
   listId?: string
   position?: number
 }
