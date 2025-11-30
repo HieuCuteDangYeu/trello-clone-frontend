@@ -19,7 +19,7 @@
 
         <div class="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
           <div class="bg-blue-600 h-full transition-all duration-500 ease-out"
-            :style="{ width: `${((currentIndex) / cards.length) * 100}%` }"></div>
+            :style="{ width: `${((currentIndex + 1) / cards.length) * 100}%` }"></div>
         </div>
       </div>
 
