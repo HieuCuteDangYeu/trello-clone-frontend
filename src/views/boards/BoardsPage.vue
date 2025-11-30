@@ -114,7 +114,7 @@
     </Dialog>
 
     <ConfirmDeleteDialog :open="isDeleteOpen" title="Delete Deck?"
-      description="This will permanently delete this deck and all lists/cards inside it."
+      description="This will permanently delete this deck and all stages/words inside it."
       @update:open="isDeleteOpen = $event" @confirm="handleDeleteBoard" @cancel="isDeleteOpen = false" />
   </div>
 </template>
@@ -228,7 +228,7 @@ const onSubmit = handleSubmit(async (values) => {
       router.push(`/boards/${newBoard._id}`);
     }
   } catch (err) {
-    toast.error(isEditing.value ? 'Failed to update board' : 'Failed to create board', {
+    toast.error(isEditing.value ? 'Failed to update deck' : 'Failed to create deck', {
       description: getErrorMessage(err)
     });
   }

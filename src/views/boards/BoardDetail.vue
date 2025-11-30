@@ -212,7 +212,7 @@ onMounted(async () => {
       listStore.lists.map(list => cardStore.fetchCardsForList(list._id))
     );
   } catch {
-    toast.error('Board not found');
+    toast.error('Deck not found');
     router.push('/boards');
   } finally {
     isPageLoading.value = false;

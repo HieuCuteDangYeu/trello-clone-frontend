@@ -8,7 +8,7 @@
       <Tabs default-value="users" class="w-full">
         <TabsList>
           <TabsTrigger value="users">Users Management</TabsTrigger>
-          <TabsTrigger value="boards">Boards Management</TabsTrigger>
+          <TabsTrigger value="boards">Decks Management</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users" class="mt-4">
@@ -105,7 +105,7 @@
                 <TableHeader>
                   <TableRow>
                     <TableHead>Title</TableHead>
-                    <TableHead>Board ID (Access)</TableHead>
+                    <TableHead>Deck ID (Access)</TableHead>
                     <TableHead>Visibility</TableHead>
                     <TableHead class="text-right">Actions</TableHead>
                   </TableRow>
@@ -178,7 +178,7 @@
       </Tabs>
     </div>
 
-    <ConfirmDeleteDialog :open="isDeleteOpen" :title="deleteType === 'user' ? 'Delete User?' : 'Delete Board?'"
+    <ConfirmDeleteDialog :open="isDeleteOpen" :title="deleteType === 'user' ? 'Delete User?' : 'Delete Deck?'"
       :description="deleteDescription" @update:open="isDeleteOpen = $event" @confirm="handleDelete"
       @cancel="isDeleteOpen = false" />
   </div>
@@ -205,7 +205,7 @@ const idToDelete = ref<string | null>(null);
 const deleteDescription = computed(() => {
   return deleteType.value === 'user'
     ? 'This will permanently delete the user account and all their data.'
-    : 'This will permanently delete the board and all lists/cards inside it.';
+    : 'This will permanently delete the deck and all stages/words inside it.';
 });
 
 onMounted(() => {
