@@ -10,15 +10,21 @@ export const useAuthStore = defineStore('auth', () => {
   const accessToken = ref(Cookies.get('accessToken') || '')
   const isAuthenticated = ref(!!Cookies.get('accessToken'))
 
+  const isProduction = window.location.protocol === 'https:'
+
   function setTokens(data: LoginResponse) {
     accessToken.value = data.accessToken
     isAuthenticated.value = true
     Cookies.set('accessToken', data.accessToken, {
-      secure: true,
-      sameSite: 'Strict',
+      secure: isProduction,
+      sameSite: isProduction ? 'None' : 'Lax',
       expires: 15 / (24 * 60),
     })
-    Cookies.set('refreshToken', data.refreshToken, { secure: true, sameSite: 'Strict', expires: 7 })
+    Cookies.set('refreshToken', data.refreshToken, {
+      secure: isProduction,
+      sameSite: isProduction ? 'None' : 'Lax',
+      expires: 7,
+    })
   }
 
   async function login(payload: { email: string; password: string }) {
