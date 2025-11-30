@@ -74,10 +74,21 @@ api.interceptors.response.use(
       const refreshToken = Cookies.get('refreshToken')
       if (!refreshToken) throw new Error('No refresh token available')
 
-      const { data } = await axios.post<LoginResponse>('/api/auth/refresh-token', { refreshToken })
+      const baseURL = import.meta.env.VITE_BACKEND_URL || '/api'
+      const isProduction = window.location.protocol === 'https:'
 
-      Cookies.set('accessToken', data.accessToken, { secure: true, sameSite: 'Strict' })
-      Cookies.set('refreshToken', data.refreshToken, { secure: true, sameSite: 'Strict' })
+      const { data } = await axios.post<LoginResponse>(`${baseURL}/auth/refresh-token`, {
+        refreshToken,
+      })
+
+      Cookies.set('accessToken', data.accessToken, {
+        secure: isProduction,
+        sameSite: isProduction ? 'None' : 'Lax',
+      })
+      Cookies.set('refreshToken', data.refreshToken, {
+        secure: isProduction,
+        sameSite: isProduction ? 'None' : 'Lax',
+      })
 
       processQueue(null, data.accessToken)
 
