@@ -1,7 +1,6 @@
 <template>
   <Dialog :open="open" @update:open="close">
     <DialogContent class="sm:max-w-[600px] min-h-[500px] flex flex-col p-0 gap-0 overflow-hidden bg-slate-50">
-
       <div class="px-6 py-4 border-b flex justify-between items-center bg-white shadow-sm z-10">
         <div>
           <DialogTitle class="text-xl flex items-center gap-2">

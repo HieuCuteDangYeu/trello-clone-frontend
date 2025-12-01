@@ -2,6 +2,7 @@ import { useAuthStore } from '@/stores/auth'
 import AdminDashboard from '@/views/admin/AdminDashboard.vue'
 import ForgotPasswordPage from '@/views/auth/ForgotPasswordPage.vue'
 import LoginPage from '@/views/auth/LoginPage.vue'
+import ProfilePage from '@/views/auth/ProfilePage.vue'
 import RegisterPage from '@/views/auth/RegisterPage.vue'
 import ResetPasswordPage from '@/views/auth/ResetPasswordPage.vue'
 import VerifyEmailPage from '@/views/auth/VerifyEmailPage.vue'
@@ -57,6 +58,12 @@ const router = createRouter({
       path: '/boards/:id',
       name: 'BoardDetail',
       component: BoardDetail,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/profile',
+      name: 'Profile',
+      component: ProfilePage,
       meta: { requiresAuth: true },
     },
     {

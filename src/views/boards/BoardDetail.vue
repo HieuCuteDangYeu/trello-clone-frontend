@@ -7,14 +7,13 @@
           {{ boardStore.currentBoard?.title }}
         </h1>
       </div>
-      <Button variant="outline" size="sm" @click="$router.push('/boards')">
+      <Button variant="outline" size="sm" class="cursor-pointer" @click="$router.push('/boards')">
         <ArrowLeft class="w-4 h-4" />Back to Decks
       </Button>
     </header>
 
     <div class="flex-1 overflow-x-auto overflow-y-hidden">
       <div class="h-full flex px-6 pb-4 gap-5 items-start pt-6">
-
         <template v-if="isPageLoading">
           <div v-for="i in 3" :key="i" class="w-72 shrink-0 bg-gray-100 rounded-lg h-96 animate-pulse border">
             <div class="h-10 bg-slate-200 rounded-t-lg mb-4"></div>
@@ -63,19 +62,19 @@
 
                           <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <Button variant="ghost" size="icon"
-                              class="h-6 w-6 text-slate-400 hover:text-blue-600 hover:bg-slate-100"
+                              class="h-6 w-6 text-slate-400 hover:text-blue-600 hover:bg-slate-100 cursor-pointer"
                               @click.stop="speakWord(card.title)" title="Listen">
                               <Volume2 class="w-3.5 h-3.5" />
                             </Button>
 
                             <Button variant="ghost" size="icon"
-                              class="h-6 w-6 text-slate-400 hover:text-blue-600 hover:bg-slate-100"
+                              class="h-6 w-6 text-slate-400 hover:text-blue-600 hover:bg-slate-100 cursor-pointer"
                               @click.stop="openEditDialog(card)" title="Edit">
                               <Pencil class="w-3.5 h-3.5" />
                             </Button>
 
                             <Button variant="ghost" size="icon"
-                              class="h-6 w-6 text-slate-400 hover:text-red-600 hover:bg-slate-100"
+                              class="h-6 w-6 text-slate-400 hover:text-red-600 hover:bg-slate-100 cursor-pointer"
                               @click.stop="handleDeleteCard(card._id)" title="Delete">
                               <X class="w-3.5 h-3.5" />
                             </Button>
@@ -110,14 +109,15 @@
                     <Input v-model="newCardTranslation" placeholder="Meaning (e.g. Cat)"
                       class="bg-white mb-2 h-8 text-sm" />
                     <div class="flex gap-2">
-                      <Button type="submit" size="sm" class="h-7 px-3 text-xs">Add Word</Button>
-                      <Button type="button" variant="ghost" size="sm" class="h-7 px-2" @click="cancelAddCard">
+                      <Button type="submit" size="sm" class="h-7 px-3 text-xs cursor-pointer">Add Word</Button>
+                      <Button type="button" variant="ghost" size="sm" class="h-7 px-2 cursor-pointer"
+                        @click="cancelAddCard">
                         <X class="w-4 h-4" />
                       </Button>
                     </div>
                   </form>
                   <Button v-else variant="ghost" size="sm"
-                    class="w-full justify-start text-slate-500 hover:text-slate-700 hover:bg-slate-200"
+                    class="w-full justify-start text-slate-500 hover:text-slate-700 hover:bg-slate-200 cursor-pointer"
                     @click="startAddCard(list._id)">
                     <Plus class="w-4 h-4" /> Add word
                   </Button>
@@ -130,14 +130,14 @@
             <form v-if="isAddingList" @submit.prevent="handleAddList" class="bg-white p-3 rounded-lg border shadow-sm">
               <Input v-model="newListTitle" placeholder="Stage Name (e.g. Mastered)..." class="mb-2" autoFocus />
               <div class="flex gap-2">
-                <Button type="submit" size="sm">Add Stage</Button>
-                <Button type="button" variant="ghost" size="sm" @click="isAddingList = false">
+                <Button type="submit" size="sm" class="cursor-pointer">Add Stage</Button>
+                <Button type="button" variant="ghost" size="sm" class="cursor-pointer" @click="isAddingList = false">
                   <X class="w-4 h-4" />
                 </Button>
               </div>
             </form>
             <Button v-else
-              class="w-full bg-white/50 hover:bg-white/80 text-slate-700 justify-start border-2 border-dashed border-slate-300"
+              class="w-full bg-white/50 hover:bg-white/80 text-slate-700 justify-start border-2 border-dashed border-slate-300 cursor-pointer"
               @click="isAddingList = true">
               <Plus class="w-4 h-4" /> Add Stage
             </Button>

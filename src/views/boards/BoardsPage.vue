@@ -6,7 +6,7 @@
       <div class="flex items-center justify-between mb-8">
         <h1 class="text-3xl font-bold text-slate-800">My Language Decks</h1>
 
-        <Button @click="openCreateDialog" class="bg-blue-600 hover:bg-blue-700 text-white">
+        <Button @click="openCreateDialog" class="bg-blue-600 hover:bg-blue-700 text-white cursor-pointer">
           <Plus class="w-4 h-4" /> Create New Deck
         </Button>
       </div>
@@ -31,7 +31,7 @@
             <DropdownMenu>
               <DropdownMenuTrigger as-child>
                 <Button variant="ghost" size="icon"
-                  class="h-8 w-8 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full">
+                  class="h-8 w-8 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full cursor-pointer">
                   <MoreHorizontal class="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -88,24 +88,30 @@
           <FormField v-slot="{ componentField }" name="language">
             <FormItem>
               <FormLabel>Target Language (Voice)</FormLabel>
-              <FormControl>
-                <select
-                  class="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                  v-bind="componentField">
-                  <option v-for="lang in supportedLanguages" :key="lang.value" :value="lang.value">
-                    {{ lang.label }}
-                  </option>
-                </select>
-              </FormControl>
+              <Select v-bind="componentField">
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a language" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Languages</SelectLabel>
+                    <SelectItem v-for="lang in supportedLanguages" :key="lang.value" :value="lang.value">
+                      {{ lang.label }}
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           </FormField>
 
           <div class="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" @click="isDialogOpen = false">
+            <Button class="cursor-pointer" type="button" variant="outline" @click="isDialogOpen = false">
               Cancel
             </Button>
-            <Button type="submit" :disabled="isSubmitting">
+            <Button class="cursor-pointer" type="submit" :disabled="isSubmitting">
               {{ isSubmitting ? 'Saving...' : (isEditing ? 'Save Changes' : 'Create Deck') }}
             </Button>
           </div>
@@ -146,6 +152,15 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { createBoardSchema } from '@/schemas/board';
 import { useBoardStore } from '@/stores/board';
 import type { Board } from '@/types/board';

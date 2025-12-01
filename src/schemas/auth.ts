@@ -36,7 +36,17 @@ export const resetPasswordSchema = z
     path: ['confirmPassword'],
   })
 
+export const updateProfileSchema = z.object({
+  username: z
+    .string()
+    .min(3, { message: 'Username must be at least 3 characters' })
+    .max(20, { message: 'Username cannot exceed 20 characters' })
+    .optional(),
+  email: z.string().email({ message: 'Invalid email address' }).optional(),
+})
+
 export type LoginSchema = z.infer<typeof loginSchema>
 export type RegisterSchema = z.infer<typeof registerSchema>
 export type ForgotPasswordSchema = z.infer<typeof forgotPasswordSchema>
 export type ResetPasswordSchema = z.infer<typeof resetPasswordSchema>
+export type UpdateProfileSchema = z.infer<typeof updateProfileSchema>
