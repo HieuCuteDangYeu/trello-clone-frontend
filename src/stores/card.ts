@@ -64,6 +64,9 @@ export const useCardStore = defineStore('card', () => {
     const destList = cards.value[toListId]
     const card = destList?.find((c) => c._id === cardId)
 
+    const oldListId = card?.listId
+    const oldPosition = card?.position
+
     if (card) {
       card.listId = toListId
       card.position = newPosition
@@ -75,6 +78,13 @@ export const useCardStore = defineStore('card', () => {
         position: newPosition,
       })
     } catch (error) {
+      if (card && oldListId && oldPosition) {
+        card.listId = oldListId
+        card.position = oldPosition
+      }
+      const listKeys = Object.keys(cards.value)
+      listKeys.forEach((id) => fetchCardsForList(id))
+
       throw error
     }
   }
