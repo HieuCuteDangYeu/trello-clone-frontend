@@ -47,19 +47,29 @@ export const useListStore = defineStore('list', () => {
     }
   }
 
-  async function moveList(listId: string, newPosition: number, oldPosition: number) {
+  async function moveList(listId: string, calculatedPosition: number, oldIndex: number) {
+    const list = lists.value.find((l) => l._id === listId)
+    const originalPositionValue = list?.position
+
+    if (list) {
+      list.position = calculatedPosition
+    }
+
     try {
-      await listsApi.update(listId, { position: newPosition })
+      await listsApi.update(listId, { position: calculatedPosition })
     } catch (error) {
-      const currentIdx = lists.value.findIndex((l) => l._id === listId)
+      if (list && originalPositionValue) {
+        list.position = originalPositionValue
+      }
 
-      if (currentIdx !== -1) {
-        const [movedList] = lists.value.splice(currentIdx, 1)
-
+      const currentIndex = lists.value.findIndex((l) => l._id === listId)
+      if (currentIndex !== -1) {
+        const [movedList] = lists.value.splice(currentIndex, 1)
         if (movedList) {
-          lists.value.splice(oldPosition, 0, movedList)
+          lists.value.splice(oldIndex, 0, movedList)
         }
       }
+
       throw error
     }
   }

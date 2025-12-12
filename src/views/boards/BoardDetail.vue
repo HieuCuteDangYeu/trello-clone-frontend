@@ -257,18 +257,56 @@ const openEditDialog = (card: Card) => {
 const onListDrop = (event: DraggableChange<List>) => {
   if (event.moved) {
     const { element, newIndex, oldIndex } = event.moved;
-    listStore.moveList(element._id, newIndex, oldIndex);
+
+    const lists = listStore.lists;
+
+    const prevList = lists[newIndex - 1];
+    const nextList = lists[newIndex + 1];
+
+    let newPosition = 0;
+
+    if (!prevList && !nextList) {
+      newPosition = 1024;
+    } else if (!prevList && nextList) {
+      newPosition = nextList.position / 2;
+    } else if (!nextList && prevList) {
+      newPosition = prevList.position + 1024;
+    } else if (prevList && nextList) {
+      newPosition = (prevList.position + nextList.position) / 2;
+    }
+
+    listStore.moveList(element._id, newPosition, oldIndex);
   }
 };
 
 const onCardDrop = (event: DraggableChange<Card>, listId: string) => {
+  let element: Card | undefined;
+  let newIndex: number | undefined;
+
   if (event.moved) {
-    const { element, newIndex } = event.moved;
-    cardStore.moveCard(element._id, listId, newIndex);
+    ({ element, newIndex } = event.moved);
+  } else if (event.added) {
+    ({ element, newIndex } = event.added);
   }
-  else if (event.added) {
-    const { element, newIndex } = event.added;
-    cardStore.moveCard(element._id, listId, newIndex);
+
+  if (element && newIndex !== undefined) {
+    const cards = cardStore.cards[listId] || [];
+
+    const prevCard = cards[newIndex - 1];
+    const nextCard = cards[newIndex + 1];
+
+    let newPosition = 0;
+    if (!prevCard && !nextCard) {
+      newPosition = 1024;
+    } else if (!prevCard && nextCard) {
+      newPosition = nextCard.position / 2;
+    } else if (!nextCard && prevCard) {
+      newPosition = prevCard.position + 1024;
+    } else if (prevCard && nextCard) {
+      newPosition = (prevCard.position + nextCard.position) / 2;
+    }
+
+    cardStore.moveCard(element._id, listId, newPosition);
   }
 };
 
