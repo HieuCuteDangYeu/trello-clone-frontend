@@ -73,10 +73,27 @@ export const useCardStore = defineStore('card', () => {
     }
 
     try {
-      await cardsApi.update(cardId, {
+      const { data: updatedCard } = await cardsApi.update(cardId, {
         listId: toListId,
         position: newPosition,
       })
+
+      for (const listId in cards.value) {
+        const list = cards.value[listId]
+        if (!list) continue
+
+        const index = list.findIndex((c) => c._id === cardId)
+        if (index !== -1) {
+          list.splice(index, 1)
+          break
+        }
+      }
+
+      if (!cards.value[toListId]) {
+        cards.value[toListId] = []
+      }
+
+      cards.value[toListId]?.splice(newPosition, 0, updatedCard)
     } catch (error) {
       if (card && oldListId && oldPosition) {
         card.listId = oldListId
